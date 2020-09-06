@@ -1,0 +1,20 @@
+{
+  "name": "security_checker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon --exec nyc --reporter=lcov --reporter=text mocha --throw-deprecation test/**/*.spec.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "8.1.3",
+    "requirejs": "2.3.6",
+    "sinon-chai": "3.5.0"
+  },
+  "dependencies": {
+    "chai": "4.2.0",
+    "sinon": "9.0.3"
+  }
+}
