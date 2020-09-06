@@ -6,7 +6,8 @@ var SecurityChecker = require('..');
 describe('RedirectPathMiddleware', () => {
   var redirectPathMiddleware = Object;
   var error = Error;
-  var options = {};
+  var options = Object;
+
   describe('new()', () => {
     beforeEach(() => {
       try {
@@ -38,6 +39,7 @@ describe('RedirectPathMiddleware', () => {
       });
     });
   });
+
   describe('paths()', () => {
     before(() => {
       options = {
@@ -49,6 +51,7 @@ describe('RedirectPathMiddleware', () => {
       expect(redirectPathMiddleware.paths[0]).to.have.equal('example/path');
     });
   });
+
   describe('redirectPath()', () => {
     it('should replace the path result', () => {});
   });
