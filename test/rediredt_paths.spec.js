@@ -83,7 +83,7 @@ describe('RedirectPathMiddleware', () => {
     });
   });
 
-  describe('middleware()', () => {
+  describe('redirectToAssetsMiddleware()', () => {
     let req = Object,
       resp = Object;
 
@@ -109,7 +109,7 @@ describe('RedirectPathMiddleware', () => {
 
     describe('when request path with params matched the config', () => {
       before(() => {
-        req = { path: '/shopback/resource?sort=desc' };
+        req = { path: '/shopback/resource?sort=desc', method: 'GET' };
       });
       it('should replace the path', () => {
         expect(error.message).to.be.undefined;
@@ -119,7 +119,7 @@ describe('RedirectPathMiddleware', () => {
 
     describe('when request close path with params matched the config', () => {
       before(() => {
-        req = { path: '/shopback/resource/?sort=desc' };
+        req = { path: '/shopback/resource/?sort=desc', method: 'GET' };
       });
       it('should replace the path', () => {
         expect(error.message).to.be.undefined;
@@ -129,11 +129,24 @@ describe('RedirectPathMiddleware', () => {
 
     describe('when request path with params partially matched the config', () => {
       before(() => {
-        req = { path: '/shopback/resource/products/?sort=desc' };
+        req = { path: '/shopback/resource/products/?sort=desc', method: 'GET' };
       });
       it('should replace the path', () => {
         expect(error.message).to.be.undefined;
         expect(req.path).equal('/shopback/static/assets/products/?sort=desc');
+      });
+    });
+
+    describe('when request is not a GET method', () => {
+      before(() => {
+        req = {
+          path: '/shopback/resource/products/?sort=desc',
+          method: 'POST',
+        };
+      });
+      it('should not replace the path', () => {
+        expect(error.message).to.be.undefined;
+        expect(req.path).equal('/shopback/resource/products/?sort=desc');
       });
     });
   });
