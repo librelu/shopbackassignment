@@ -149,5 +149,20 @@ describe('RedirectPathMiddleware', () => {
         expect(req.path).equal('/shopback/resource/products/?sort=desc');
       });
     });
+
+    describe('when request path is not match in the beginning', () => {
+      before(() => {
+        req = {
+          path: '/additional-path/shopback/resource/products/?sort=desc',
+          method: 'GET',
+        };
+      });
+      it('should not replace the path', () => {
+        expect(error.message).to.be.undefined;
+        expect(req.path).equal(
+          '/additional-path/shopback/resource/products/?sort=desc'
+        );
+      });
+    });
   });
 });
