@@ -462,7 +462,7 @@ describe('MiddlewareProvider', () => {
     });
   });
 
-  describe('checkShopBackAgentMiddleware()', () => {
+  describe('shopBackAgentCheckerMiddleware()', () => {
     let req = Object,
       resp = Object,
       error = Error,
@@ -472,7 +472,7 @@ describe('MiddlewareProvider', () => {
       try {
         next = chai.spy();
         middlewareProvider = new SecurityChecker.MiddlewareProvider();
-        middlewareProvider.checkShopBackAgentMiddleware(req, resp, next);
+        middlewareProvider.shopBackAgentCheckerMiddleware(req, resp, next);
       } catch (e) {
         error = e;
       }
@@ -566,7 +566,7 @@ describe('MiddlewareProvider', () => {
     });
   });
 
-  describe('checkShopBackAgentMiddleware()', () => {
+  describe('isJSONApplicationCheckerMiddleware()', () => {
     let req = Object,
       resp = Object,
       error = Error,
@@ -576,7 +576,7 @@ describe('MiddlewareProvider', () => {
       try {
         next = chai.spy();
         middlewareProvider = new SecurityChecker.MiddlewareProvider();
-        middlewareProvider.checkIsJSONApplicationMiddleware(req, resp, next);
+        middlewareProvider.isJSONApplicationCheckerMiddleware(req, resp, next);
       } catch (e) {
         error = e;
       }
@@ -644,7 +644,7 @@ describe('MiddlewareProvider', () => {
     });
   });
 
-  describe('checkShopBackAgentMiddleware()', () => {
+  describe('xShopbackAgentWhenDeleteCheckerMiddleware()', () => {
     let req = Object,
       resp = Object,
       error = Error,
@@ -654,7 +654,7 @@ describe('MiddlewareProvider', () => {
       try {
         next = chai.spy();
         middlewareProvider = new SecurityChecker.MiddlewareProvider();
-        middlewareProvider.checkXShopbackAgentWhenDeleteMiddleware(
+        middlewareProvider.xShopbackAgentWhenDeleteCheckerMiddleware(
           req,
           resp,
           next
@@ -722,6 +722,89 @@ describe('MiddlewareProvider', () => {
             'X-SHOPBACK-AGENT': undefined,
           },
           method: 'DELETE',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+  });
+
+  describe('shopbackTimeStampCheckerMiddleware()', () => {
+    let req = Object,
+      resp = Object,
+      error = Error,
+      next = () => {};
+
+    beforeEach(() => {
+      try {
+        next = chai.spy();
+        middlewareProvider = new SecurityChecker.MiddlewareProvider();
+        middlewareProvider.shopbackTimeStampCheckerMiddleware(req, resp, next);
+      } catch (e) {
+        error = e;
+      }
+    });
+
+    afterEach(() => {
+      // reset params
+      req = Object;
+      resp = Object;
+      middlewareProvider = Object;
+      error = Error;
+      next = () => {};
+    });
+
+    describe('when header matched', () => {
+      before(() => {
+        req = {
+          headers: {
+            'X-SHOPBACK-TIMESTAMP': Date.now(),
+          },
+          method: 'GET',
+        };
+      });
+      it('should pass', () => {
+        expect(error.message).to.be.undefined;
+        next.should.have.been.called.once;
+      });
+    });
+
+    describe('when header is out of date', () => {
+      before(() => {
+        req = {
+          headers: {
+            'X-SHOPBACK-TIMESTAMP': Date.UTC(2020, 8, 1, 0, 0, 0),
+          },
+          method: 'GET',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+
+    describe('when header is in the future', () => {
+      before(() => {
+        req = {
+          headers: {
+            'X-SHOPBACK-TIMESTAMP': Date.UTC(2200, 11, 1, 0, 0, 0),
+          },
+          method: 'GET',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+
+    describe('when header is undefined', () => {
+      before(() => {
+        req = {
+          method: 'GET',
         };
       });
       it('should throw error', () => {
