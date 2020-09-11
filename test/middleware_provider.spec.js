@@ -565,4 +565,82 @@ describe('MiddlewareProvider', () => {
       });
     });
   });
+
+  describe('checkShopBackAgentMiddleware()', () => {
+    let req = Object,
+      resp = Object,
+      error = Error,
+      next = () => {};
+
+    beforeEach(() => {
+      try {
+        next = chai.spy();
+        middlewareProvider = new SecurityChecker.MiddlewareProvider();
+        middlewareProvider.checkIsJSONApplicationMiddleware(req, resp, next);
+      } catch (e) {
+        error = e;
+      }
+    });
+
+    afterEach(() => {
+      // reset params
+      req = Object;
+      resp = Object;
+      middlewareProvider = Object;
+      error = Error;
+      next = () => {};
+    });
+
+    describe('when PUT method matched', () => {
+      before(() => {
+        req = {
+          headers: { 'Content-Type': 'application/json' },
+          method: 'PUT',
+        };
+      });
+      it('should pass', () => {
+        expect(error.message).to.be.undefined;
+        next.should.have.been.called.once;
+      });
+    });
+
+    describe('when POST method matched', () => {
+      before(() => {
+        req = {
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        };
+      });
+      it('should pass', () => {
+        expect(error.message).to.be.undefined;
+        next.should.have.been.called.once;
+      });
+    });
+
+    describe('when method is not matched', () => {
+      before(() => {
+        req = {
+          headers: { 'Content-Type': 'application/json' },
+          method: 'GET',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+
+    describe('when content-type is not application/json', () => {
+      before(() => {
+        req = {
+          headers: { 'Content-Type': 'undeclared type' },
+          method: 'POST',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+  });
 });
