@@ -128,12 +128,13 @@ describe('MiddlewareProvider', () => {
     let req = Object,
       resp = Object,
       error = Error,
+      options = {},
       next = () => {};
 
     beforeEach(() => {
       try {
         next = chai.spy();
-        middlewareProvider = new SecurityChecker.MiddlewareProvider();
+        middlewareProvider = new SecurityChecker.MiddlewareProvider(options);
         middlewareProvider.cookieMatcherMiddleware(req, resp, next);
       } catch (e) {
         error = e;
@@ -147,6 +148,7 @@ describe('MiddlewareProvider', () => {
       middlewareProvider = Object;
       error = Error;
       next = () => {};
+      options = {};
     });
     describe('when path matched and cookie header', () => {
       before(() => {
@@ -161,6 +163,52 @@ describe('MiddlewareProvider', () => {
       it('should pass', () => {
         expect(error.message).to.be.undefined;
         next.should.have.been.called.once;
+      });
+    });
+
+    describe('when path matched with options', () => {
+      before(() => {
+        options = {
+          cookieChecker: {
+            authentication: '4ab07cc40a4e4f62b8b3c49c69d65040',
+            name: 'test-user',
+          },
+        };
+        req = {
+          path: '/shopback/me',
+          method: 'GET',
+          cookies: {
+            authentication: '4ab07cc40a4e4f62b8b3c49c69d65040',
+            name: 'test-user',
+          },
+        };
+      });
+      it('should pass', () => {
+        expect(error.message).to.be.undefined;
+        next.should.have.been.called.once;
+      });
+    });
+
+    describe('when cookies is not match with options', () => {
+      before(() => {
+        options = {
+          cookieChecker: {
+            authentication: '4ab07cc40a4e4f62b8b3c49c69d65040',
+            name: 'test-user',
+          },
+        };
+        req = {
+          path: '/shopback/me',
+          method: 'GET',
+          cookies: {
+            authentication: 'no token',
+            name: 'test-user',
+          },
+        };
+      });
+      it('should pass', () => {
+        expect(error.name).equal('BadRequestError');
+        next.should.not.have.been.called;
       });
     });
 
@@ -466,12 +514,13 @@ describe('MiddlewareProvider', () => {
     let req = Object,
       resp = Object,
       error = Error,
+      options = {},
       next = () => {};
 
     beforeEach(() => {
       try {
         next = chai.spy();
-        middlewareProvider = new SecurityChecker.MiddlewareProvider();
+        middlewareProvider = new SecurityChecker.MiddlewareProvider(options);
         middlewareProvider.shopBackAgentCheckerMiddleware(req, resp, next);
       } catch (e) {
         error = e;
@@ -482,6 +531,7 @@ describe('MiddlewareProvider', () => {
       // reset params
       req = Object;
       resp = Object;
+      options = {};
       middlewareProvider = Object;
       error = Error;
       next = () => {};
@@ -648,12 +698,13 @@ describe('MiddlewareProvider', () => {
     let req = Object,
       resp = Object,
       error = Error,
+      options = {},
       next = () => {};
 
     beforeEach(() => {
       try {
         next = chai.spy();
-        middlewareProvider = new SecurityChecker.MiddlewareProvider();
+        middlewareProvider = new SecurityChecker.MiddlewareProvider(options);
         middlewareProvider.xShopbackAgentWhenDeleteCheckerMiddleware(
           req,
           resp,
@@ -670,6 +721,7 @@ describe('MiddlewareProvider', () => {
       resp = Object;
       middlewareProvider = Object;
       error = Error;
+      options = {};
       next = () => {};
     });
 
@@ -685,6 +737,24 @@ describe('MiddlewareProvider', () => {
       it('should pass', () => {
         expect(error.message).to.be.undefined;
         next.should.have.been.called.once;
+      });
+    });
+
+    describe('when options is not matched', () => {
+      before(() => {
+        options = {
+          shopbackAgent: 'AGENT_2',
+        };
+        req = {
+          headers: {
+            'X-SHOPBACK-AGENT': 'AGENT_1',
+          },
+          method: 'DELETE',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
       });
     });
 
