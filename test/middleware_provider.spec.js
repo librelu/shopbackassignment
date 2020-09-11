@@ -643,4 +643,91 @@ describe('MiddlewareProvider', () => {
       });
     });
   });
+
+  describe('checkShopBackAgentMiddleware()', () => {
+    let req = Object,
+      resp = Object,
+      error = Error,
+      next = () => {};
+
+    beforeEach(() => {
+      try {
+        next = chai.spy();
+        middlewareProvider = new SecurityChecker.MiddlewareProvider();
+        middlewareProvider.checkXShopbackAgentWhenDeleteMiddleware(
+          req,
+          resp,
+          next
+        );
+      } catch (e) {
+        error = e;
+      }
+    });
+
+    afterEach(() => {
+      // reset params
+      req = Object;
+      resp = Object;
+      middlewareProvider = Object;
+      error = Error;
+      next = () => {};
+    });
+
+    describe('when method matched', () => {
+      before(() => {
+        req = {
+          headers: {
+            'X-SHOPBACK-AGENT': 'AGENT_1',
+          },
+          method: 'DELETE',
+        };
+      });
+      it('should pass', () => {
+        expect(error.message).to.be.undefined;
+        next.should.have.been.called.once;
+      });
+    });
+
+    describe('when method not matched', () => {
+      before(() => {
+        req = {
+          headers: {
+            'X-SHOPBACK-AGENT': 'AGENT_1',
+          },
+          method: 'GET',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+
+    describe('when header is undefined', () => {
+      before(() => {
+        req = {
+          method: 'DELETE',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+
+    describe('when x-shopback-agent is undefined', () => {
+      before(() => {
+        req = {
+          headers: {
+            'X-SHOPBACK-AGENT': undefined,
+          },
+          method: 'DELETE',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+  });
 });
