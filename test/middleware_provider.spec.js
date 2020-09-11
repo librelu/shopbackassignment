@@ -172,9 +172,9 @@ describe('MiddlewareProvider', () => {
           cookies: {},
         };
       });
-      it('should returns error', () => {
+      it('should throw error', () => {
         expect(error.name).equal('BadRequestError');
-        next.should.not.have.been.called.once;
+        next.should.not.have.been.called;
       });
     });
 
@@ -188,9 +188,9 @@ describe('MiddlewareProvider', () => {
           },
         };
       });
-      it('should returns error', () => {
+      it('should throw error', () => {
         expect(error.name).equal('BadRequestError');
-        next.should.not.have.been.called.once;
+        next.should.not.have.been.called;
       });
     });
 
@@ -204,9 +204,9 @@ describe('MiddlewareProvider', () => {
           },
         };
       });
-      it('should returns error', () => {
+      it('should throw error', () => {
         expect(error.name).equal('BadRequestError');
-        next.should.not.have.been.called.once;
+        next.should.not.have.been.called;
       });
     });
   });
@@ -260,9 +260,9 @@ describe('MiddlewareProvider', () => {
           method: 'POST',
         };
       });
-      it('should returns error', () => {
+      it('should throw error', () => {
         expect(error.name).equal('BadRequestError');
-        next.should.not.have.been.called.once;
+        next.should.not.have.been.called;
       });
     });
 
@@ -275,9 +275,9 @@ describe('MiddlewareProvider', () => {
           method: 'GET',
         };
       });
-      it('should returns error', () => {
+      it('should throw error', () => {
         expect(error.name).equal('BadRequestError');
-        next.should.not.have.been.called.once;
+        next.should.not.have.been.called;
       });
     });
   });
@@ -337,9 +337,9 @@ describe('MiddlewareProvider', () => {
           },
         };
       });
-      it('should returns error', () => {
+      it('should throw error', () => {
         expect(error.name).equal('BadRequestError');
-        next.should.not.have.been.called.once;
+        next.should.not.have.been.called;
       });
     });
     describe('when method is incorrect', () => {
@@ -354,14 +354,14 @@ describe('MiddlewareProvider', () => {
           },
         };
       });
-      it('should returns error', () => {
+      it('should throw error', () => {
         expect(error.name).equal('BadRequestError');
-        next.should.not.have.been.called.once;
+        next.should.not.have.been.called;
       });
     });
   });
 
-  describe('redirectToEmailLinkMiddleware()', () => {
+  describe('trimQueryStringMiddleware()', () => {
     let req = Object,
       resp = Object,
       error = Error,
@@ -385,11 +385,30 @@ describe('MiddlewareProvider', () => {
       error = Error;
       next = () => {};
     });
-    describe('when method matched', () => {
+    describe('when PUT method matched', () => {
       before(() => {
         req = {
           path: '/shopback/api/any_path?hello=world',
           method: 'PUT',
+        };
+        resp = {
+          set: (key, value) => {
+            resp[key] = value;
+          },
+        };
+      });
+      it('should pass', () => {
+        expect(error.message).to.be.undefined;
+        expect(req.path).to.be.equal('/shopback/api/any_path');
+        next.should.have.been.called.once;
+      });
+    });
+
+    describe('when POST method matched', () => {
+      before(() => {
+        req = {
+          path: '/shopback/api/any_path?hello=world',
+          method: 'POST',
         };
         resp = {
           set: (key, value) => {
@@ -439,6 +458,110 @@ describe('MiddlewareProvider', () => {
         expect(error.message).to.be.undefined;
         expect(req.path).to.be.equal('/shopback/api/any_path');
         next.should.have.been.called.once;
+      });
+    });
+  });
+
+  describe('checkShopBackAgentMiddleware()', () => {
+    let req = Object,
+      resp = Object,
+      error = Error,
+      next = () => {};
+
+    beforeEach(() => {
+      try {
+        next = chai.spy();
+        middlewareProvider = new SecurityChecker.MiddlewareProvider();
+        middlewareProvider.checkShopBackAgentMiddleware(req, resp, next);
+      } catch (e) {
+        error = e;
+      }
+    });
+
+    afterEach(() => {
+      // reset params
+      req = Object;
+      resp = Object;
+      middlewareProvider = Object;
+      error = Error;
+      next = () => {};
+    });
+    describe('when PUT method matched', () => {
+      before(() => {
+        req = {
+          headers: { 'X-SHOPBACK-AGENT': 'bcd1c25e10994db9a1c7ac90756058b7' },
+          method: 'PUT',
+        };
+      });
+      it('should pass', () => {
+        expect(error.message).to.be.undefined;
+        next.should.have.been.called.once;
+      });
+    });
+
+    describe('when POST method matched', () => {
+      before(() => {
+        req = {
+          headers: { 'X-SHOPBACK-AGENT': 'bcd1c25e10994db9a1c7ac90756058b7' },
+          method: 'POST',
+        };
+      });
+      it('should pass', () => {
+        expect(error.message).to.be.undefined;
+        next.should.have.been.called.once;
+      });
+    });
+
+    describe('when given incorrect method', () => {
+      before(() => {
+        req = {
+          headers: { 'X-SHOPBACK-AGENT': 'bcd1c25e10994db9a1c7ac90756058b7' },
+          method: 'GET',
+        };
+      });
+      it('should throw errors', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+
+    describe('when given req without headers', () => {
+      before(() => {
+        req = {
+          method: 'PUT',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+
+    describe('when given req without X-SHOPBACK-AGENT', () => {
+      before(() => {
+        req = {
+          headers: {},
+          method: 'PUT',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+
+    describe('when given req header X-SHOPBACK-AGENT is undefined', () => {
+      before(() => {
+        req = {
+          headers: {
+            'X-SHOPBACK-AGENT': undefined,
+          },
+          method: 'PUT',
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
       });
     });
   });
