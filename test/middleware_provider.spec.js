@@ -813,4 +813,58 @@ describe('MiddlewareProvider', () => {
       });
     });
   });
+
+  describe('shopbackTimeStampCheckerMiddleware()', () => {
+    let req = Object,
+      resp = Object,
+      error = Error,
+      next = () => {};
+
+    beforeEach(() => {
+      try {
+        next = chai.spy();
+        middlewareProvider = new SecurityChecker.MiddlewareProvider();
+        middlewareProvider.shopbackDomainCheckerMiddleware(req, resp, next);
+      } catch (e) {
+        error = e;
+      }
+    });
+
+    afterEach(() => {
+      // reset params
+      req = Object;
+      resp = Object;
+      middlewareProvider = Object;
+      error = Error;
+      next = () => {};
+    });
+
+    describe('when host is matched', () => {
+      before(() => {
+        req = {
+          get: (name) => {
+            return { host: 'www.shopback.com' }[name];
+          },
+        };
+      });
+      it('should pass', () => {
+        expect(error.message).to.be.undefined;
+        next.should.have.been.called.once;
+      });
+    });
+
+    describe('when host is not matched', () => {
+      before(() => {
+        req = {
+          get: (name) => {
+            return { host: 'www.shopback.hk' }[name];
+          },
+        };
+      });
+      it('should throw error', () => {
+        expect(error.name).to.be.equal('BadRequestError');
+        next.should.not.have.been.called;
+      });
+    });
+  });
 });
